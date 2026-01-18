@@ -5,8 +5,8 @@ from src.semantic_matcher import semantic_skill_match
 import os
 
 
-
 def match_skills(resume_text, jd_text):
+    # Resolve skills file path safely
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     skill_file = os.path.join(BASE_DIR, "data", "skills.csv")
 
@@ -20,46 +20,34 @@ def match_skills(resume_text, jd_text):
     # Exact keyword matches
     exact_matches = list(set(resume_skills).intersection(set(jd_skills)))
 
-    # Remaining JD skills
+    # Remaining JD skills after exact match
     remaining_jd_skills = list(set(jd_skills) - set(exact_matches))
 
     # Semantic matching
-    # Exact keyword matches
-    exact_matches = list(set(resume_skills).intersection(set(jd_skills)))
-
-# Remaining JD skills after exact match
-    remaining_jd_skills = list(set(jd_skills) - set(exact_matches))
-
-# Semantic matching
     semantic_matches, _ = semantic_skill_match(
-    resume_skills,
-    remaining_jd_skills
-)
+        resume_skills,
+        remaining_jd_skills
+    )
 
-# Skills matched semantically (JD side)
+    # Skills matched semantically (JD side)
     semantic_matched_jd_skills = [jd for jd, _ in semantic_matches]
 
-# Final matched skills
+    # Final matched skills
     final_matched_skills = exact_matches + semantic_matched_jd_skills
 
-# ✅ FINAL missing skills (CORRECT LOGIC)
-    final_missing_skills = list(
-    set(jd_skills) - set(final_matched_skills)
-)
+    # Final missing skills (CORRECT LOGIC)
+    final_missing_skills = list(set(jd_skills) - set(final_matched_skills))
 
-
-    # Final results
-    final_matched_skills = exact_matches + [jd for jd, _ in semantic_matches]
-
-    # Scores
+    # Match score
     match_score = (
         (len(final_matched_skills) / len(jd_skills)) * 100
         if len(jd_skills) > 0 else 0
     )
 
+    # ATS score
     ats = ats_score(resume_text, jd_skills)
 
-    # Roadmap
+    # Learning roadmap
     roadmap = generate_roadmap(final_missing_skills)
 
     return {

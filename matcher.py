@@ -58,3 +58,4 @@ def match_skills(resume_text, jd_text):
         "ats_score": ats,
         "roadmap": roadmap
     }
+

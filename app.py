@@ -1,9 +1,14 @@
-import streamlit as st
-import tempfile
+import sys
 import os
+import tempfile
 
-from src.resume_parser import extract_text_from_pdf
-from src.matcher import match_skills
+sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
+
+import streamlit as st
+
+from resume_parser import extract_text_from_pdf
+from matcher import match_skills
+
 
 st.set_page_config(page_title="AI Resume Screener", layout="centered")
 

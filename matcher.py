@@ -1,7 +1,8 @@
-from src.skill_extractor import load_skills, extract_skills
-from src.roadmap import generate_roadmap
-from src.ats_checker import ats_score
-from src.semantic_matcher import semantic_skill_match
+from skill_extractor import load_skills, extract_skills
+from roadmap import generate_roadmap
+from ats_checker import ats_score
+from semantic_matcher import semantic_skill_match
+
 import os
 
 
@@ -58,4 +59,3 @@ def match_skills(resume_text, jd_text):
         "ats_score": ats,
         "roadmap": roadmap
     }
-

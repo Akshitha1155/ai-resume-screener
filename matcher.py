@@ -6,11 +6,7 @@ from semantic_matcher import semantic_skill_match
 import os
 
 
-def match_skills(resume_text, jd_text):
-    # Resolve skills file path safely
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    skill_file = os.path.join(BASE_DIR, "data", "skills.csv")
-
+def match_skills(resume_text, jd_text, skill_file):
     # Load skills list
     skills = load_skills(skill_file)
 

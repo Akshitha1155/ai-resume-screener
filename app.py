@@ -2,16 +2,16 @@ import streamlit as st
 import tempfile
 import os
 
-# Import your project logic
 from src.resume_parser import extract_text_from_pdf
-from src.skill_extractor import load_skills, extract_skills
-from src.roadmap import generate_roadmap
-from src.ats_checker import ats_score
+from src.matcher import match_skills
 
 st.set_page_config(page_title="AI Resume Screener", layout="centered")
 
-st.title("🧠 AI Resume Screening System")
-st.write("Upload your resume and paste the job description to get an AI-based analysis.")
+st.title("🧠 AI Resume Screening System (Advanced)")
+st.write(
+    "Upload your resume and paste the job description to get an AI-based analysis "
+    "with semantic skill matching."
+)
 
 st.markdown("---")
 
@@ -36,51 +36,57 @@ if analyze_btn:
             tmp.write(resume_file.read())
             resume_path = tmp.name
 
-        # Load skills list
-        skills = load_skills("data/skills.csv")
-
         # Extract resume text
         resume_text = extract_text_from_pdf(resume_path)
 
-        # Extract skills
-        resume_skills = set(extract_skills(resume_text, skills))
-        jd_skills = set(extract_skills(jd_text, skills))
+        # --- CALL ADVANCED MATCHER ---
+        result = match_skills(resume_text, jd_text)
 
-        # Compare
-        matched_skills = resume_skills.intersection(jd_skills)
-        missing_skills = jd_skills - resume_skills
+        matched_skills = result["matched_skills"]
+        semantic_matches = result["semantic_matches"]
+        missing_skills = result["missing_skills"]
+        match_score = result["match_score"]
+        ats_score = result["ats_score"]
+        roadmap = result["roadmap"]
 
-        # Match score
-        if len(jd_skills) > 0:
-            match_score = (len(matched_skills) / len(jd_skills)) * 100
-        else:
-            match_score = 0
-
-        # ATS score
-        ats = ats_score(resume_text, jd_skills)
-
-        # Learning roadmap
-        roadmap = generate_roadmap(missing_skills)
-        st.write("DEBUG ROADMAP:", roadmap)
+        # Cleanup temp file
+        os.remove(resume_path)
 
         # --- DISPLAY RESULTS ---
         st.success("Analysis Completed Successfully!")
 
-        st.subheader("Scores")
+        st.subheader("📊 Scores")
         st.write(f"**Match Score:** {match_score:.2f}%")
-        st.write(f"**ATS Compatibility Score:** {ats:.2f}%")
+        st.write(f"**ATS Compatibility Score:** {ats_score:.2f}%")
 
-        st.subheader(" Matched Skills")
+        st.subheader("✅ Exact & Final Matched Skills")
         if matched_skills:
-            st.write(", ".join(matched_skills))
+            st.write(", ".join(sorted(set(matched_skills))))
         else:
-            st.write("No matched skills found.")
+            st.write("No exact matches found.")
 
-        st.subheader(" Missing Skills")
+        if semantic_matches:
+            st.subheader("🧠 Semantic Matched Skills")
+            for jd_skill, resume_skill in semantic_matches:
+                st.write(f"{jd_skill} ↔ {resume_skill}")
 
-    if missing_skills:
-        st.write(", ".join(sorted(missing_skills)))
-    else:
-        st.success("No missing skills . Resume fully matches the job!")
+        st.subheader("❌ Missing Skills")
+
+        if missing_skills:
+            st.write(", ".join(sorted(missing_skills)))
+
+        elif match_score > 0:
+            st.success("No missing skills 🎉 Resume fully matches the job!")
+
+        else:
+            st.warning("No skill match found between resume and job description.")
 
 
+        st.subheader("🎯 Learning Roadmap")
+        if roadmap:
+            for skill, steps in roadmap.items():
+                st.markdown(f"**{skill.upper()}**")
+                for step in steps:
+                    st.write("•", step)
+        else:
+            st.info("No roadmap needed.")

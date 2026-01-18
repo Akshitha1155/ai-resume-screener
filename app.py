@@ -1,6 +1,8 @@
 import sys
 import os
 import tempfile
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SKILLS_PATH = os.path.join(BASE_DIR, "data", "skills.csv")
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
@@ -45,7 +47,7 @@ if analyze_btn:
         resume_text = extract_text_from_pdf(resume_path)
 
         # --- CALL ADVANCED MATCHER ---
-        result = match_skills(resume_text, jd_text)
+        result = match_skills(resume_text, jd_text, SKILLS_PATH)
 
         matched_skills = result["matched_skills"]
         semantic_matches = result["semantic_matches"]
